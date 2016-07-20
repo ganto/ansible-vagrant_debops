@@ -166,7 +166,7 @@ E.g.:
 
         config.vm.provision "ansible" do |ansible|
           ansible.playbook = "vagrant_debops.yml"
-          ansible.extra_vars => {
+          ansible.extra_vars = {
             vagrant_debops__ssh_keypair: {
               private_key_file: '~/.ssh/id_rsa',
               public_key_file: '~/.ssh/id_rsa.pub'
