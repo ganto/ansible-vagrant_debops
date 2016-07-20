@@ -1,0 +1,8 @@
+---
+
+- name: Setup DebOps via Vagrant
+  hosts: [ 'debops_master:debops_all_hosts' ]
+  become: True
+
+  roles:
+    - role: vagrant_debops

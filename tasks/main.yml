@@ -1,0 +1,80 @@
+---
+
+- block:
+
+    - name: Create .ssh directory
+      file:
+        path: '{{ vagrant_debops__ssh_user_home }}/.ssh'
+        state: 'directory'
+        mode: '0700'
+
+    - name: Upload private
+      copy:
+        src: '{{ vagrant_debops__ssh_keypair["private_key_file"] }}'
+        dest: '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}'
+        mode: '0600'
+      when: '{{ "private_key_file" in vagrant_debops__ssh_keypair }}'
+      register: vagrant_debops__register_privkey_upload
+
+    - name: Upload public key
+      copy:
+        src: '{{ vagrant_debops__ssh_keypair["public_key_file"] }}'
+        dest: '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}.pub'
+        mode: '0644'
+      when: '{{ "public_key_file" in vagrant_debops__ssh_keypair }}'
+
+    - name: Generate public key from private key
+      shell: ssh-keygen -y -f '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}' > '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}.pub'
+      when: '{{ (not "public_key_file" in vagrant_debops__ssh_keypair) and
+                (vagrant_debops__register_privkey_upload.changed|d(False)) }}'
+
+  become: False
+  delegate_to: '{{ groups["debops_master"]|d(inventory_hostname) }}'
+
+
+- block:
+
+    - name: Read custom SSH public key
+      command: cat '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}.pub'
+      always_run: True
+      changed_when: False
+      register: vagrant_debops__register_pubkey
+      delegate_to: '{{ groups["debops_master"]|d(inventory_hostname) }}'
+
+    - name: Enable SSH public key login for DebOps
+      authorized_key:
+        user: '{{ ansible_ssh_user }}'
+        key: '{{ vagrant_debops__register_pubkey.stdout }}'
+
+  when: '{{ not vagrant_debops__ssh_keypair["private_key_file"] == ansible_ssh_private_key_file }}'
+
+
+- block:
+
+    - name: Generate SSH config
+      template:
+        src: 'home/vagrant/.ssh/config.j2'
+        dest: '{{ vagrant_debops__ssh_user_home }}/.ssh/config'
+        mode: '0644'
+      when: '{{ vagrant_debops__ssh_keypair["private_key_file"] == ansible_ssh_private_key_file }}'
+
+    - name: Disable strict SSH host key check
+      ini_file:
+        dest: '{{ vagrant_debops__ssh_user_home }}/{{ vagrant_debops__debops__project_name }}/.debops.cfg'
+        section: 'ansible defaults'
+        option: 'host_key_checking'
+        value: 'False'
+
+    - name: Read Vagrant Ansible inventory
+      set_fact:
+        vagrant_debops__fact_inventory: '{{ lookup("pipe", "cat " + inventory_dir + "/vagrant_ansible_inventory") }}'
+
+    - name: Upload Ansible inventory
+      template:
+        src: 'ansible/inventory/hosts.j2'
+        dest: '{{ vagrant_debops__ssh_user_home }}/{{ vagrant_debops__debops__project_name }}/ansible/inventory/hosts'
+      when: vagrant_debops__upload_inventory|d()
+
+  become: False
+  when: '{{ (inventory_hostname in groups["debops_master"]|d([])) or
+            (groups["all"] | length == 1) }}'

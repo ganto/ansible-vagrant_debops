@@ -1,0 +1,9 @@
+{{ ansible_managed | comment }}
+{% for _line in vagrant_debops__fact_inventory.split("\n") %}
+{%   if _line | search("ansible_ssh_private_key_file") %}
+{%     set _machine = _line.split(" ")[0] %}
+{{     _line | regex_replace("ansible_ssh_private_key_file='.*'", "ansible_ssh_private_key_file='" + vagrant_debops__ssh_user_home + "/.ssh/" + vagrant_debops__ssh_privkey_name + "'") }}
+{%   else %}
+{{     _line }}
+{%   endif %}
+{% endfor %}

@@ -1,0 +1,27 @@
+---
+
+dependencies:
+
+  - role: debops.debops
+    tags: [ 'role::debops' ]
+    debops__install_systemwide: '{{ vagrant_debops__debops__system_wide }}'
+    debops__update_method: '{{ vagrant_debops__debops__update_method }}'
+    debops__project_name: '{{ vagrant_debops__debops__project_name }}'
+
+
+galaxy_info:
+
+  author: 'Reto Gantenbein'
+  description: 'Setup DebOps in a Vagrant environment'
+  license: 'GPLv3'
+  min_ansible_version: '2.0.0'
+
+  platforms:
+
+    - name: Debian
+      versions:
+        - jessie
+
+  galaxy_tags:
+    - vagrant
+    - debops
