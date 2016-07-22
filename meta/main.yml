@@ -2,6 +2,11 @@
 
 dependencies:
 
+  - role: debops.apt_preferences
+    tags: [ 'role::apt_preferences' ]
+    apt_preferences__dependent_list:
+      - '{{ debops__apt_preferences__dependent_list }}'
+
   - role: debops.debops
     tags: [ 'role::debops' ]
     debops__install_systemwide: '{{ vagrant_debops__debops__system_wide }}'
