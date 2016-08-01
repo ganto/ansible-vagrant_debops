@@ -11,7 +11,9 @@ role and makes sure the SSH trust in a multi-machine environment is properly
 setup.
 
 
-### Requirements
+### Getting Started
+
+#### Requirements
 
 This role is mainly intended to be run with the Ansible provisioner in Vagrant.
 Therefore it requires Vagrant (>=1.8) and Ansible (>=2.0) to be installed on
@@ -24,7 +26,7 @@ introductions:
 * [vagrantup.com: Ansible and Vagrant - Short Introduction](https://www.vagrantup.com/docs/provisioning/ansible_intro.html)
 
 
-### Usage
+#### Usage
 
 To setup DebOps in a Vagrant machine follow these steps:
 
@@ -60,7 +62,7 @@ To setup DebOps in a Vagrant machine follow these steps:
           }
         end
 
-4. Run:
+5. Run:
 
         vagrant up
         vagrant ssh
@@ -82,6 +84,34 @@ This role has the following dependencies to other Ansible Galaxy roles:
 
 They will be automatically pulled in when installing `ganto.vagrant_debops`
 via `galaxy_role_file` option in the `Vagrantfile` as described above.
+
+
+#### Multi-machine Vagrant setup
+
+`vagrant_debops` also works and even makes more fun in a Vagrant multi-machine
+setup. This means that you can bootstrap a cluster of hosts via Vagrant and
+then manage them via DebOps. To do so, follow the official
+[multi-machine](https://www.vagrantup.com/docs/multi-machine/index.html)
+instructions and additionally specify which machine should be the DebOps
+master by adding it to the `[debops_master]` Ansible host group. In your
+`Vagrantfile` you would then have something like this:
+
+      (1..3).each do |machine_id|
+        config.vm.define "host#{machine_id}"
+      end
+
+      config.vm.provision "ansible" do |ansible|
+        ansible.galaxy_role_file = "requirements.txt"
+        ansible.playbook = "vagrant_debops.yml"
+        ansible.groups = {
+          "debops_master" => [ "host1" ],
+          "debops_all_hosts" => [ "host1", "host2", "host3" ]
+        }
+      end
+
+This will setup `debops` on 'host1' and configure the SSH trust for 'host1'
+to 'host2' and 'host1' to 'host3' so that Ansible from 'host1' can access
+'host2' and 'host3' without any further configuration.
 
 
 #### Examples
