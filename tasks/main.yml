@@ -13,7 +13,7 @@
         src: '{{ vagrant_debops__ssh_keypair["private_key_file"] }}'
         dest: '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}'
         mode: '0600'
-      when: '{{ "private_key_file" in vagrant_debops__ssh_keypair }}'
+      when: ("private_key_file" in vagrant_debops__ssh_keypair)
       register: vagrant_debops__register_privkey_upload
 
     - name: Upload public key
@@ -21,16 +21,18 @@
         src: '{{ vagrant_debops__ssh_keypair["public_key_file"] }}'
         dest: '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}.pub'
         mode: '0644'
-      when: '{{ "public_key_file" in vagrant_debops__ssh_keypair }}'
+      when: ("public_key_file" in vagrant_debops__ssh_keypair)
 
     - name: Generate public key from private key
       shell: ssh-keygen -y -f '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}' > '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}.pub'
-      when: '{{ (not "public_key_file" in vagrant_debops__ssh_keypair) and
-                (vagrant_debops__register_privkey_upload.changed|d(False)) }}'
+      when: (not "public_key_file" in vagrant_debops__ssh_keypair) and
+            (vagrant_debops__register_privkey_upload.changed|d(False))
 
   become: False
-  delegate_to: '{{ groups["debops_master"]|d(inventory_hostname) }}'
-
+  delegate_to: '{{ groups["debops_master"][0]
+                   if (("debops_master" in groups) and
+                       (groups["debops_master"] | length > 0))
+                   else inventory_hostname }}'
 
 - block:
 
@@ -39,15 +41,17 @@
       always_run: True
       changed_when: False
       register: vagrant_debops__register_pubkey
-      delegate_to: '{{ groups["debops_master"]|d(inventory_hostname) }}'
+      delegate_to: '{{ groups["debops_master"][0]
+                       if (("debops_master" in groups) and
+                           (groups["debops_master"] | length > 0))
+                       else inventory_hostname }}'
 
     - name: Enable SSH public key login for DebOps
       authorized_key:
         user: '{{ ansible_ssh_user }}'
         key: '{{ vagrant_debops__register_pubkey.stdout }}'
 
-  when: '{{ not vagrant_debops__ssh_keypair["private_key_file"] == ansible_ssh_private_key_file }}'
-
+  when: (not vagrant_debops__ssh_keypair["private_key_file"] == ansible_ssh_private_key_file)
 
 - block:
 
@@ -56,7 +60,7 @@
         src: 'home/vagrant/.ssh/config.j2'
         dest: '{{ vagrant_debops__ssh_user_home }}/.ssh/config'
         mode: '0644'
-      when: '{{ vagrant_debops__ssh_keypair["private_key_file"] == ansible_ssh_private_key_file }}'
+      when: vagrant_debops__ssh_keypair["private_key_file"] == ansible_ssh_private_key_file
 
     - name: Disable strict SSH host key check
       ini_file:
@@ -76,5 +80,6 @@
       when: vagrant_debops__upload_inventory|d()
 
   become: False
-  when: '{{ (inventory_hostname in groups["debops_master"]|d([])) or
-            (groups["all"] | length == 1) }}'
+  when: (("debops_master" in groups) and
+         (inventory_hostname in groups["debops_master"])) or
+        (groups["all"] | length == 1)
