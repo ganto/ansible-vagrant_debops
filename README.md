@@ -102,7 +102,7 @@ repositories, `apt` package manager
 [preferences](https://docs.debops.org/en/latest/ansible/roles/ansible-apt_preferences/docs/defaults.html),
 any [DebOps](https://docs.debops.org/en/latest/ansible/roles/ansible-debops/docs/defaults.html)
 settings or the `vagrant_debops` role behaviour itself (see
-[Role Variables](#Role-Variables) below). E.g.:
+[Role Variables](#role-variables) below). E.g.:
 
         config.vm.provision "ansible" do |ansible|
           [...]
