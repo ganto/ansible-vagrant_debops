@@ -24,29 +24,6 @@ introductions:
 * [vagrantup.com: Ansible and Vagrant - Short Introduction](https://www.vagrantup.com/docs/provisioning/ansible_intro.html)
 
 
-### Installation
-
-To install this Ansible role with normal user privileges make sure you define
-a role directory within you user home. Add the following line to the
-`[defaults]` section of your `~/.ansible.cfg`:
-
-    roles_path = ~/.ansible/roles:/etc/ansible/roles
-
-Then run:
-
-    ansible-galaxy install ganto.vagrant_debops
-
-
-#### Dependencies
-
-This role has the following dependencies to other Ansible Galaxy roles:
-
-* [debops.debops](https://galaxy.ansible.com/debops/debops)
-
-They will be automatically pulled in when installing `vagrant_debops` as
-described above.
-
-
 ### Usage
 
 To setup DebOps in a Vagrant machine follow these steps:
@@ -68,10 +45,19 @@ To setup DebOps in a Vagrant machine follow these steps:
           roles:
             - role: ganto.vagrant_debops
 
-3. Add the Ansible provisioner definition to the project's `Vagrantfile`:
+3. Create a file where you list the Ansible roles you want to use with the Vagrant
+   provisioner. With the playbook above you only need `ganto.vagrant_debops`:
+
+        echo ganto.vagrant_debops > requirements.txt
+
+4. Add the Ansible provisioner definition to the project's `Vagrantfile`:
 
         config.vm.provision "ansible" do |ansible|
+          ansible.galaxy_role_file = "requirements.txt"
           ansible.playbook = "vagrant_debops.yml"
+          ansible.groups = {
+            "debops_all_hosts" => [ "default" ]
+          }
         end
 
 4. Run:
@@ -81,16 +67,67 @@ To setup DebOps in a Vagrant machine follow these steps:
 
 After the machine was successfully provisioned, DebOps with all the roles
 and playbooks is setup and a dummy DebOps project was created in
-`~vagrant/debops_vagrant`.
+`~vagrant/vagrant-debops`. You can then start using `debops` from within
+the machine as described in
+[DebOps: Getting started](https://docs.debops.org/en/latest/debops/docs/getting-started.html)
+
+
+#### Dependencies
+
+This role has the following dependencies to other Ansible Galaxy roles:
+
+* [debops.apt](https://galaxy.ansible.com/debops/apt)
+* [debops.apt_preferences](https://galaxy.ansible.com/debops/apt_preferences)
+* [debops.debops](https://galaxy.ansible.com/debops/debops)
+
+They will be automatically pulled in when installing `ganto.vagrant_debops`
+via `galaxy_role_file` option in the Vagrantfile as described above.
 
 
 ### Customization
 
-The following role `vagrant_debops` role variables can be used to customize
-the role operation.
+#### How to set Ansible variables via Vagrantfile
 
-#### Variables
+Variables used when provisioning DebOps must be set via Vagrant `extra_vars`
+option. Like this you can customize
+[apt](https://docs.debops.org/en/latest/ansible/roles/ansible-apt/docs/defaults.html)
+repositories, `apt` package manager
+[preferences](https://docs.debops.org/en/latest/ansible/roles/ansible-apt_preferences/docs/defaults.html),
+any [debops](https://docs.debops.org/en/latest/ansible/roles/ansible-debops/docs/defaults.html)
+settings or the `vagrant_debops` role behaviour itself. E.g.:
 
+        config.vm.provision "ansible" do |ansible|
+          [...]
+          ansible.extra_vars = {
+            apt__mirrors: [ 'http://mirror.switch.ch/ftp/mirror/debian/' ],
+            vagrant_debops__ssh_keypair: {
+              private_key_file: '~/.ssh/id_rsa',
+              public_key_file: '~/.ssh/id_rsa.pub'
+            }
+          }
+        end
+
+Before `ansible` is called, Vagrant will generate an Ansible inventory file
+from the information provided in the `Vagrantfile`. By default the
+`vagrant_debops` role will copy this inventory to the DebOps machine so
+it can be also used with DebOps. Variables which should be available for
+`debops` therefore must be saved to this inventory file. Vagrant will do this
+if they are specified as group variables. E.g.:
+
+        config.vm.provision "ansible" do |ansible|
+		ansible.playbook = "vagrant_debops.yml"
+          [...]
+          ansible.groups = {
+            "debops_all_hosts" => [ "default" ],
+            "debops_all_hosts:vars" => {
+               "apt__mirrors" => "[ 'http://mirror.switch.ch/ftp/mirror/debian/' ]",
+               "dhparam__bits" => "[ '1024' ]"
+            }
+          }
+        end
+
+
+#### Role Variables
 
 ##### `vagrant_debops__ssh_keypair`
 
@@ -161,23 +198,6 @@ allow to configure the DebOps inventory completely in the `Vagrantfile`.
 Default value: `True`
 
 
-#### How to set Ansible variables via Vagrantfile
-
-The role variables listed above as well as any other role variable from the
-`debops.debops` role or any DebOps role can be defined in the `Vagrantfile`.
-E.g.:
-
-        config.vm.provision "ansible" do |ansible|
-          ansible.playbook = "vagrant_debops.yml"
-          ansible.extra_vars = {
-            vagrant_debops__ssh_keypair: {
-              private_key_file: '~/.ssh/id_rsa',
-              public_key_file: '~/.ssh/id_rsa.pub'
-            }
-          }
-        end
-
-
 ### Authors and license
 
 The `vagrant_debops` role was written by:
@@ -185,4 +205,3 @@ The `vagrant_debops` role was written by:
 - [Reto Gantenbein](https://linuxmonk.ch/) | [e-mail](mailto:reto.gantenbein@linuxmonk.ch) | [GitHub](https://github.com/ganto)
 
 License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
-
