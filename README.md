@@ -81,7 +81,14 @@ This role has the following dependencies to other Ansible Galaxy roles:
 * [debops.debops](https://galaxy.ansible.com/debops/debops)
 
 They will be automatically pulled in when installing `ganto.vagrant_debops`
-via `galaxy_role_file` option in the Vagrantfile as described above.
+via `galaxy_role_file` option in the `Vagrantfile` as described above.
+
+
+#### Examples
+
+You can find a number of example Vagrant projects using the `vagrant_debops`
+role in my [vagrant-projects](https://github.com/ganto/vagrant-projects) GitHub
+repository.
 
 
 ### Customization
@@ -93,8 +100,9 @@ option. Like this you can customize
 [apt](https://docs.debops.org/en/latest/ansible/roles/ansible-apt/docs/defaults.html)
 repositories, `apt` package manager
 [preferences](https://docs.debops.org/en/latest/ansible/roles/ansible-apt_preferences/docs/defaults.html),
-any [debops](https://docs.debops.org/en/latest/ansible/roles/ansible-debops/docs/defaults.html)
-settings or the `vagrant_debops` role behaviour itself. E.g.:
+any [DebOps](https://docs.debops.org/en/latest/ansible/roles/ansible-debops/docs/defaults.html)
+settings or the `vagrant_debops` role behaviour itself (see
+[Role Variables](#Role-Variables) below). E.g.:
 
         config.vm.provision "ansible" do |ansible|
           [...]
