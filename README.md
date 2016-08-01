@@ -34,11 +34,8 @@ To setup DebOps in a Vagrant machine follow these steps:
 
         vagrant init debian/jessie64
 
-2. Copy the provided playbook to the project directory:
-
-        cp ~/.ansible/roles/ganto.vagrant_debops/docs/playbooks/vagrant_debops.yml .
-
-   If you already have a playbook, extend it with:
+2. Create a minimal playbook to run the `ganto.vagrant_debops` role. E.g. in
+   `vagrant_debops.yml`:
 
         - name: Setup DebOps via Vagrant
           hosts: all
