@@ -1,7 +1,7 @@
 ## [![DebOps project](http://debops.org/images/debops-small.png)](http://debops.org) vagrant_debops
 
 [![Ansible Galaxy](http://img.shields.io/badge/galaxy-ganto.vagrant_debops-660198.svg?style=flat)](https://galaxy.ansible.com/ganto/vagrant_debops/)
-[![Platforms](http://img.shields.io/badge/platforms-debian-lightgrey.svg?style=flat)](#)
+[![Platforms](https://img.shields.io/badge/platform-debian%7Cubuntu-lightgrey.svg?style=flat)](#)
 
 `vagrant_debops` is an Ansible role which can be used with the
 [Vagrant](https://www.vagrantup.com) Ansible provisioner to prepare machines
