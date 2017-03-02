@@ -8,7 +8,7 @@
         state: 'directory'
         mode: '0700'
 
-    - name: Upload private
+    - name: Upload private key
       copy:
         src: '{{ vagrant_debops__ssh_keypair["private_key_file"] }}'
         dest: '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}'
