@@ -8,7 +8,7 @@
         state: 'directory'
         mode: '0700'
 
-    - name: Upload private
+    - name: Upload private key
       copy:
         src: '{{ vagrant_debops__ssh_keypair["private_key_file"] }}'
         dest: '{{ vagrant_debops__ssh_user_home }}/.ssh/{{ vagrant_debops__ssh_privkey_name }}'
@@ -71,7 +71,10 @@
 
     - name: Read Vagrant Ansible inventory
       set_fact:
-        vagrant_debops__fact_inventory: '{{ lookup("pipe", "cat " + inventory_dir + "/vagrant_ansible_inventory") }}'
+        # replace "{{" and "}}" with "[[" and "]]" to avoid substitution of
+        # variables which might not be defined in the context of the running
+        # playbook.
+        vagrant_debops__fact_inventory: '{{ lookup("pipe", "sed -E -e ''s|\{\{|[[|g'' -e ''s|}}|]]|g'' " + inventory_dir + "/vagrant_ansible_inventory") }}'
 
     - name: Upload Ansible inventory
       template:
