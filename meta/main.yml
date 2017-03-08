@@ -18,9 +18,10 @@ dependencies:
 
   - role: debops.debops
     tags: [ 'role::debops' ]
+    debops__packages: '{{ vagrant_debops__debops__packages }}'
+    debops__project_name: '{{ vagrant_debops__debops__project_name }}'
     debops__install_systemwide: '{{ vagrant_debops__debops__system_wide }}'
     debops__update_method: '{{ vagrant_debops__debops__update_method }}'
-    debops__project_name: '{{ vagrant_debops__debops__project_name }}'
     when: (("debops_master" in groups) and
            (inventory_hostname in groups["debops_master"])) or
           (not "debops_master" in groups)
