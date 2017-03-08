@@ -40,7 +40,7 @@ vagrant_debops__ssh_privkey_name: '{{ inventory_hostname if vagrant_debops__ssh_
 # .. envvar:: vagrant_debops__debops__packages
 #
 # List of additional APT packages to install with DebOps.
-vagrant_debops__debops__packages: [ 'python-dns' ]
+vagrant_debops__debops__packages: [ 'python-dnspython' ]
 
 
 # .. envvar:: vagrant_debops__debops__install_systemwide
