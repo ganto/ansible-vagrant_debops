@@ -233,6 +233,20 @@ allow to configure the DebOps inventory completely in the `Vagrantfile`.
 Default value: `True`
 
 
+##### `vagrant_debops__inventory_vars`
+
+Global variables which will be added to the inventory after uploading. This
+requires `vagrant_debops__upload_inventory` to be `True`.
+
+Default value:
+```
+  # Set Vagrant host as Ansible controller to avoid blocking `vagrant ssh`
+  core__ansible_controllers: [ '{{ ansible_env["SSH_CLIENT"].split(" ")[0] }}/32' ]
+  ferm__ansible_controllers: [ '{{ ansible_env["SSH_CLIENT"].split(" ")[0] }}/32' ]
+  tcpwrappers__ansible_controllers: [ '{{ ansible_env["SSH_CLIENT"].split(" ")[0] }}/32' ]
+```
+
+
 ### Authors and license
 
 The `vagrant_debops` role was written by:
