@@ -9,3 +9,10 @@
 {{     _line }}
 {%   endif %}
 {% endfor %}
+
+{% if vagrant_debops__inventory_vars %}
+[all:vars]
+{%   for _key, _value in vagrant_debops__inventory_vars.iteritems() %}
+{{ _key }}={{ _value | to_json }}
+{%   endfor %}
+{% endif %}
