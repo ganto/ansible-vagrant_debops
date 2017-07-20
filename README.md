@@ -241,9 +241,12 @@ requires `vagrant_debops__upload_inventory` to be `True`.
 Default value:
 ```
   # Set Vagrant host as Ansible controller to avoid blocking `vagrant ssh`
-  core__ansible_controllers: [ '{{ ansible_env["SSH_CLIENT"].split(" ")[0] }}/32' ]
-  ferm__ansible_controllers: [ '{{ ansible_env["SSH_CLIENT"].split(" ")[0] }}/32' ]
-  tcpwrappers__ansible_controllers: [ '{{ ansible_env["SSH_CLIENT"].split(" ")[0] }}/32' ]
+  core__ansible_controllers:
+    - '{{ ansible_env.SSH_CLIENT.split(" ")[0] }}/32'
+  ferm__ansible_controllers:
+    - '{{ ansible_env.SSH_CLIENT.split(" ")[0] }}/32'
+  tcpwrappers__ansible_controllers:
+    - '{{ ansible_env.SSH_CLIENT.split(" ")[0] }}/32'
 ```
 
 
